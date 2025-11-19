@@ -61,11 +61,6 @@ router.get(
 );
 
 router.get(
-  "/get-all-products",
-  asyncHandler(product.getAllProducts.bind(product))
-);
-
-router.get(
   "/get-subcategory-products/:subcategoryId",
   asyncHandler(product.getProductsBySubcategory.bind(product))
 );

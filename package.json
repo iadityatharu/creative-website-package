@@ -10,7 +10,8 @@
     "seed": "ts-node src/seeder/runSeeder.ts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "env:init": "cp -n .env.example .env"
   },
   "keywords": [],
   "author": "",

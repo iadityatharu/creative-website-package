@@ -4,6 +4,7 @@ import adminRoute from "./authentication/admin.route";
 import categoryRoute from "./category/category.route";
 import subcategoryRoute from "./subcategory/subcategory.route";
 import productRoute from "./product/product.route";
+import publicProductRoute from "./public/product.route";
 import galleryRoute from "./gallery/gallery.route";
 import teammemberRoute from "./teammember/teammember.route";
 import inquiryRoute from "./inquiry/inquiry.route";
@@ -46,5 +47,6 @@ router.use("/seo-metadata", seoMetadataRoute);
 router.use("/analytics/category", categoryAnalyticsRoute);
 router.use("/analytics/seo", seoAnalyticsRoute);
 router.use("/analytics/user", userAnalyticsRoute);
+router.use("/public/product", publicProductRoute);
 
 export default router;

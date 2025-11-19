@@ -105,7 +105,9 @@ src/
 
 ### Environment Variables
 
-Create a `.env` file in the project root. The application expects the following keys:
+Copy `.env.example` to `.env` (the repo ignores `.env` so your secrets stay local) and fill in the values. Run `pnpm env:init` the first time you set up the project or whenever you need a fresh template. The application expects the following keys:
+
+`.env` is intentionally gitignored; only commit `.env.example`.
 
 ```env
 # Server
