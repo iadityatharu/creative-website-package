@@ -135,7 +135,7 @@ DASHBOARD_URL=https://dashboard.example.com
 R2_ACCOUNT_ID=xxxxxxxxxxxxxxx
 R2_ACCESS_KEY_ID=xxxxxxxxxxxxxxx
 R2_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxx
-R2_BUCKET=plaza-sales
+R2_BUCKET=BUCKER_NAME
 R2_PUBLIC_BASE_URL=https://cdn.example.com/
 
 # Email / SMTP
@@ -179,15 +179,15 @@ The compose file mounts a persistent volume for Postgres and health-checks all s
 
 ## Available Scripts
 
-| Script           | Description                                      |
-|------------------|--------------------------------------------------|
-| `pnpm dev`       | Run TypeScript sources with `ts-node-dev`        |
-| `pnpm build`     | Compile TypeScript into `dist/`                  |
-| `pnpm start`     | Build then run compiled server                   |
-| `pnpm seed`      | Execute `src/seeder/runSeeder.ts` (if implemented) |
-| `pnpm test`      | Execute Jest test suite                          |
-| `pnpm test:watch`| Watch tests                                      |
-| `pnpm test:coverage` | Generate coverage reports                    |
+| Script               | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `pnpm dev`           | Run TypeScript sources with `ts-node-dev`          |
+| `pnpm build`         | Compile TypeScript into `dist/`                    |
+| `pnpm start`         | Build then run compiled server                     |
+| `pnpm seed`          | Execute `src/seeder/runSeeder.ts` (if implemented) |
+| `pnpm test`          | Execute Jest test suite                            |
+| `pnpm test:watch`    | Watch tests                                        |
+| `pnpm test:coverage` | Generate coverage reports                          |
 
 ## API Surface
 
@@ -196,49 +196,51 @@ Authentication uses cookies populated with `accessToken` and `refreshToken`.
 
 ### Authentication
 
-| Method | Path | Description | Auth |
-|--------|------|-------------|------|
-| POST   | `/auth/signup` | Register a new user (supports profile upload) | Public |
-| POST   | `/auth/signin` | Login and issue tokens | Public |
-| POST   | `/auth/forgot-password` | Generate reset email | Public |
-| PATCH  | `/auth/reset-password` | Reset password with token (blocks reuse in 6 months) | Public |
+| Method | Path                    | Description                                            | Auth                     |
+| ------ | ----------------------- | ------------------------------------------------------ | ------------------------ |
+| POST   | `/auth/signup`          | Register a new user (supports profile upload)          | Public                   |
+| POST   | `/auth/signin`          | Login and issue tokens                                 | Public                   |
+| POST   | `/auth/forgot-password` | Generate reset email                                   | Public                   |
+| PATCH  | `/auth/reset-password`  | Reset password with token (blocks reuse in 6 months)   | Public                   |
 | PATCH  | `/auth/change-password` | Change password (requires old password, reuse blocked) | Authenticated & verified |
-| DELETE | `/auth/logout` | Invalidate refresh token | Authenticated & verified |
+| DELETE | `/auth/logout`          | Invalidate refresh token                               | Authenticated & verified |
 
 ### User Administration
 
 `/admin` endpoints require `authentication`, `isVerifiedUser`, and `isAdmin`.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST   | `/admin/create-users` | Create admins/operators (optional profile upload) |
-| GET    | `/admin/get-all-users` | Paginated user list |
-| GET    | `/admin/get-users/:id` | Fetch user detail |
-| PUT    | `/admin/update-users/:id` | Update user profile |
-| DELETE | `/admin/delete-users/:id` | Soft delete users |
+| Method | Path                      | Description                                       |
+| ------ | ------------------------- | ------------------------------------------------- |
+| POST   | `/admin/create-users`     | Create admins/operators (optional profile upload) |
+| GET    | `/admin/get-all-users`    | Paginated user list                               |
+| GET    | `/admin/get-users/:id`    | Fetch user detail                                 |
+| PUT    | `/admin/update-users/:id` | Update user profile                               |
+| DELETE | `/admin/delete-users/:id` | Soft delete users                                 |
 
 ### Catalogue Management
 
 Most catalogue routes accept file uploads and require admin privileges for mutations.
 
 #### Categories (`/category`)
+
 `create-category`, `update-category/:id`, `get-all-categories`, `get-category/:identifier`, `delete-category/:id`
 
 #### Subcategories (`/subcategory`)
+
 Similar CRUD interface to categories.
 
 #### Products (`/product`)
 
-| Method | Path | Notes |
-|--------|------|-------|
-| POST   | `/product/create-product` | Upload cover, detail images, manuals, brochures |
-| PUT    | `/product/update-product/:id` | Updates metadata & media |
-| GET    | `/product/get-all-products` | Public list with pagination & search |
+| Method | Path                               | Notes                                                   |
+| ------ | ---------------------------------- | ------------------------------------------------------- |
+| POST   | `/product/create-product`          | Upload cover, detail images, manuals, brochures         |
+| PUT    | `/product/update-product/:id`      | Updates metadata & media                                |
+| GET    | `/product/get-all-products`        | Public list with pagination & search                    |
 | GET    | `/product/get-product/:identifier` | Fetch by ID or slug. Includes similar products (max 8). |
-| GET    | `/product/export/excel` | Generates formatted Excel catalogue (admin) |
-| GET    | `/product/export/pdf` | Generates PDF catalogue (admin) |
-| DELETE | `/product/delete-product/:id` | Remove product |
-| GET    | `/product/stats` | Summary statistics |
+| GET    | `/product/export/excel`            | Generates formatted Excel catalogue (admin)             |
+| GET    | `/product/export/pdf`              | Generates PDF catalogue (admin)                         |
+| DELETE | `/product/delete-product/:id`      | Remove product                                          |
+| GET    | `/product/stats`                   | Summary statistics                                      |
 
 ### Content & Communication
 
@@ -278,11 +280,11 @@ Manage SEO tags for multiple entity types (create, update, list, delete).
 
 All analytics endpoints require admin access.
 
-| Module | Base Path | Description |
-|--------|-----------|-------------|
-| Category Analytics | `/analytics/category` | Category distribution & usage stats |
-| SEO Analytics | `/analytics/seo` | Page level SEO performance tracking |
-| User Analytics | `/analytics/user` | Signup, activity, and retention metrics |
+| Module             | Base Path             | Description                             |
+| ------------------ | --------------------- | --------------------------------------- |
+| Category Analytics | `/analytics/category` | Category distribution & usage stats     |
+| SEO Analytics      | `/analytics/seo`      | Page level SEO performance tracking     |
+| User Analytics     | `/analytics/user`     | Signup, activity, and retention metrics |
 
 Each module exposes listing endpoints such as `/metrics`, `/top`, `/overview` (see individual route files for precise signatures).
 
@@ -311,13 +313,13 @@ Email notifications are enqueued into `email-queue` (BullMQ). The worker boots a
 
 ## Troubleshooting
 
-| Issue | Resolution |
-|-------|------------|
-| `Database connection failed` | Verify PostgreSQL credentials and that the DB is reachable. |
-| `R2_PUBLIC_BASE_URL environment variable is not set` | Ensure all R2-related variables are present in `.env`. |
-| CORS errors | Add your origin to `ALLOWED_ORIGINS` (comma-separated). |
+| Issue                                                             | Resolution                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `Database connection failed`                                      | Verify PostgreSQL credentials and that the DB is reachable.                           |
+| `R2_PUBLIC_BASE_URL environment variable is not set`              | Ensure all R2-related variables are present in `.env`.                                |
+| CORS errors                                                       | Add your origin to `ALLOWED_ORIGINS` (comma-separated).                               |
 | Reset/change password fails with `Password used in last 6 months` | Choose a password that has not been used recently; history is enforced automatically. |
-| Emails not sending | Confirm Redis is running and SMTP credentials are valid (app logs worker failures). |
+| Emails not sending                                                | Confirm Redis is running and SMTP credentials are valid (app logs worker failures).   |
 
 ---
 
