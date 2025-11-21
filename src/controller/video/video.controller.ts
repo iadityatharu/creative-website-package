@@ -83,6 +83,23 @@ export class Video {
     });
   }
 
+  async getVideosByProductId(
+    req: AuthenticatedRequest<{ productId: string }>,
+    res: Response
+  ) {
+    const { productId } = req.params;
+    const result = await this.videoService.getVideosByProductId(productId);
+
+    if (result.status === StatusCode.NOT_FOUND)
+      throw new expressError(StatusCode.NOT_FOUND, "Product not found");
+
+    return res.status(StatusCode.OK).json({
+      status: StatusCode.OK,
+      message: Message.FOUND,
+      videos: result.videos,
+    });
+  }
+
   async updateVideo(
     req: AuthenticatedRequest<{ id: string; body: IVideo }>,
     res: Response

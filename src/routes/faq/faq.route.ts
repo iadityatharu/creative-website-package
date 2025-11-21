@@ -16,7 +16,6 @@ router.post(
   "/create-faq",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(FaqDto, "body", "create"),
   asyncHandler(faq.createFaq.bind(faq))
 );
@@ -27,7 +26,6 @@ router.get(
   "/get-faq/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(faq.getFaqById.bind(faq))
 );
 
@@ -35,7 +33,6 @@ router.put(
   "/update-faq/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(FaqDto, "body", "update"),
   asyncHandler(faq.updateFaq.bind(faq))
 );
@@ -44,7 +41,6 @@ router.delete(
   "/delete-faq/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(faq.deleteFaq.bind(faq))
 );
 

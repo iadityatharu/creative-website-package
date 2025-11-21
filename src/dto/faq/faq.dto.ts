@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsNumber } from "class-validator";
 
 export class FaqDto {
   @IsString({ groups: ["create", "update"] })
@@ -12,4 +12,8 @@ export class FaqDto {
   @IsBoolean({ groups: ["create", "update"] })
   @IsOptional({ groups: ["create", "update"] })
   isActive?: boolean;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

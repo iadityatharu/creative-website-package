@@ -1,4 +1,11 @@
-import { IsEnum, IsOptional, IsString, IsUUID, IsBoolean } from "class-validator";
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsBoolean,
+  IsNumber,
+} from "class-validator";
 import { SeoEntityType } from "../../constant/enum.constant";
 
 export class SeoMetadataDto {
@@ -54,4 +61,8 @@ export class SeoMetadataDto {
   @IsBoolean({ groups: ["create", "update"] })
   @IsOptional({ groups: ["create", "update"] })
   isOptimized?: boolean;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

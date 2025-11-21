@@ -35,7 +35,6 @@ router.delete(
   "/delete-contact/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(contact.deleteContact.bind(contact))
 );
 

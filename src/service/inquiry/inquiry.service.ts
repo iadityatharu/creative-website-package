@@ -22,6 +22,7 @@ export class Inquiry extends BaseService<InquiryEntity> {
     const product = await this.productRepo.findOne({
       where: { id: data.productId, isDeleted: false },
     });
+
     if (!product) return { status: StatusCode.NOT_FOUND };
 
     const inquiry = this.repository.create({
@@ -80,7 +81,8 @@ export class Inquiry extends BaseService<InquiryEntity> {
     }
 
     const [inquiries, total] = await query
-      .orderBy("inquiry.createdAt", "DESC")
+      .orderBy("inquiry.sortOrder", "ASC")
+      .addOrderBy("inquiry.createdAt", "DESC")
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -88,7 +90,7 @@ export class Inquiry extends BaseService<InquiryEntity> {
     const result = inquiries.map((i) => ({
       ...i,
       product: i.product ? { id: i.product.id, name: i.product.name } : null,
-   }));
+    }));
 
     return {
       status: StatusCode.OK,
@@ -142,7 +144,7 @@ export class Inquiry extends BaseService<InquiryEntity> {
     if (search) {
       query.andWhere(
         "(inquiry.name ILIKE :search OR inquiry.email ILIKE :search OR inquiry.phone ILIKE :search)",
-        { search: `%${search}%` } 
+        { search: `%${search}%` }
       );
     }
 
@@ -201,7 +203,11 @@ export class Inquiry extends BaseService<InquiryEntity> {
   async updateInquiry(id: string, data: IInquiry): Promise<{ status: number }> {
     const inquiry = await this.repository.findOne({ where: { id } });
     if (!inquiry) return { status: StatusCode.NOT_FOUND };
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      inquiry.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: inquiry.id,
+      });
+    }
     this.repository.merge(inquiry, data);
     await this.repository.save(inquiry);
     return { status: StatusCode.OK };

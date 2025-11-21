@@ -5,4 +5,5 @@ export interface ICategory {
   description?: string | Record<string, unknown>;
   coverImage?: string | null;
   subCategories?: any[];
+  sortOrder?: number;
 }

@@ -23,6 +23,7 @@ export class Signup {
         address: string;
         gender?: Gender;
         profilePicture: string;
+        sortOrder?: number;
       };
       fileUrls?: FileUploadMap;
     },

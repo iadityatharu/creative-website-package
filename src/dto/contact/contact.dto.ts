@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsOptional,
+  IsNumber,
 } from "class-validator";
 import { ContactPurpose } from "../../constant/enum.constant";
 import { IsE164Phone } from "../../decorator/isE164Phone.decorator";
@@ -43,4 +44,8 @@ export class ContactDto {
   @IsNotEmpty({ groups: ["create"] })
   @IsOptional({ groups: ["update"] })
   purpose: ContactPurpose;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

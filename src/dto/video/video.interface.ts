@@ -4,4 +4,5 @@ export interface IVideo {
   youtubeVideoId?: string;
   productModelNumber?: string;
   productId?: string;
+  sortOrder?: number;
 }

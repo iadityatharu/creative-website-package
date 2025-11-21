@@ -15,7 +15,6 @@ router.post(
   "/create-users",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "profile", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(UserDto, "body", "create"),
@@ -25,14 +24,12 @@ router.get(
   "/get-all-users",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(admin.getAllUsers.bind(admin))
 );
 router.get(
   "/get-users/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(admin.getUsersById.bind(admin))
 );
 
@@ -40,7 +37,6 @@ router.put(
   "/update-users/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "profile", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(UserDto, "body", "update"),

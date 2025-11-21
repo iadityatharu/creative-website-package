@@ -90,6 +90,11 @@ export class ProductDto {
   @IsString({ each: true, groups: ["update"] })
   @IsOptional({ groups: ["update", "create"] })
   removeUrls?: string[];
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
+  
 }
 
 export class ProductRecoverDto {

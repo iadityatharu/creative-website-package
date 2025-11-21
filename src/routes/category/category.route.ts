@@ -17,7 +17,6 @@ router.post(
   "/create-category",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "coverImage", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(CategoryDto, "body", "create"),
@@ -28,7 +27,6 @@ router.put(
   "/update-category/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "coverImage", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(CategoryDto, "body", "update"),
@@ -49,7 +47,6 @@ router.delete(
   "/delete-category/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(category.deleteCategory.bind(category))
 );
 

@@ -12,7 +12,6 @@ router.get(
   "/overview",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getOverview.bind(controller))
 );
 
@@ -20,7 +19,6 @@ router.get(
   "/entities",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getEntityBreakdown.bind(controller))
 );
 
@@ -28,7 +26,6 @@ router.get(
   "/recent",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getRecentUpdates.bind(controller))
 );
 

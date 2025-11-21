@@ -8,6 +8,7 @@ import { fileUploadHandler, upload } from "../../middleware/fileUploads";
 import { Application } from "../../controller/application/application.controller";
 import { ApplicationDto } from "../../dto/application/application.dto";
 import { RecoverDto } from "../../dto/recover.dto";
+import { isSudoAdmin } from "../../middleware/isSudoAdmin";
 
 const router = Router();
 const controller = new Application();
@@ -41,7 +42,6 @@ router.put(
   "/update-application/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([
     { name: "resumeUrl", maxCount: 1 },
     { name: "coverLetterUrl", maxCount: 1 },
@@ -55,7 +55,6 @@ router.delete(
   "/delete-application/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.deleteApplication.bind(controller))
 );
 
@@ -70,7 +69,7 @@ router.put(
   "/recover-applications",
   authentication,
   isVerifiedUser,
-  isAdmin,
+  isSudoAdmin,
   validateRequest(RecoverDto, "body"),
   asyncHandler(controller.recoverApplications.bind(controller))
 );

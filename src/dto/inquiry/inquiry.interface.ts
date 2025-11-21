@@ -9,4 +9,5 @@ export interface IInquiry {
   isHandled?: boolean;
   replies?: any[];
   repliedBy?: string;
+  sortOrder?: number;
 }

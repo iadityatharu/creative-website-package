@@ -48,7 +48,11 @@ export class Career extends BaseService<CareerEntity> {
       );
     }
 
-    query.orderBy("career.createdAt", "DESC").skip(skip).take(limit);
+    query
+      .orderBy("career.sortOrder", "ASC")
+      .addOrderBy("career.createdAt", "DESC")
+      .skip(skip)
+      .take(limit);
 
     const [careers, total] = await query.getManyAndCount();
 
@@ -96,7 +100,11 @@ export class Career extends BaseService<CareerEntity> {
       if (slugConflict && slugConflict.id !== career.id)
         return { status: StatusCode.ALREADY_EXIST };
     }
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      career.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: career.id,
+      });
+    }
     this.repository.merge(career, data);
     await this.repository.save(career);
 

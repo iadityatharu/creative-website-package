@@ -43,7 +43,11 @@ export class Review extends BaseService<ReviewEntity> {
       );
     }
 
-    query.orderBy("review.createdAt", "DESC").skip(skip).take(limit);
+    query
+      .orderBy("review.sortOrder", "ASC")
+      .addOrderBy("review.createdAt", "DESC")
+      .skip(skip)
+      .take(limit);
     const [reviews, total] = await query.getManyAndCount();
     const totalPages = limit ? Math.ceil(total / limit) : 0;
 

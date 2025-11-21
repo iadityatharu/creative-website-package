@@ -11,4 +11,5 @@ export interface IContact {
   purpose?: ContactPurpose;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

@@ -31,11 +31,16 @@ export class Video extends BaseService<VideoEntity> {
 
     if (!product) return { status: StatusCode.NOT_FOUND };
 
+    const sortOrder = await this.resolveSortOrder(data.sortOrder, {
+      scope: { productId: product.id },
+    });
+
     const video = this.repository.create({
       title: data.title,
       youtubeVideoId: data.youtubeVideoId,
       productModelNumber: data.productModelNumber,
       product,
+      sortOrder,
     });
 
     await this.repository.save(video);
@@ -70,7 +75,11 @@ export class Video extends BaseService<VideoEntity> {
       );
     }
 
-    query.orderBy("video.createdAt", "DESC").skip(skip).take(limit);
+    query
+      .orderBy("video.sortOrder", "ASC")
+      .addOrderBy("video.createdAt", "DESC")
+      .skip(skip)
+      .take(limit);
 
     const [videos, total] = await query.getManyAndCount();
 
@@ -111,6 +120,28 @@ export class Video extends BaseService<VideoEntity> {
     return { status: StatusCode.OK, video };
   }
 
+  async getVideosByProductId(
+    productId: string
+  ): Promise<{ status: number; videos?: VideoEntity[] }> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId, isDeleted: false },
+      select: ["id"],
+    });
+
+    if (!product) return { status: StatusCode.NOT_FOUND };
+
+    const videos = await this.repository
+      .createQueryBuilder("video")
+      .leftJoin("video.product", "product", "product.isDeleted = false")
+      .where("video.isDeleted = false")
+      .andWhere("product.id = :productId", { productId })
+      .orderBy("video.sortOrder", "ASC")
+      .addOrderBy("video.createdAt", "DESC")
+      .getMany();
+
+    return { status: StatusCode.OK, videos };
+  }
+
   async updateVideo(id: string, data: IVideo): Promise<{ status: number }> {
     const video = await this.repository.findOne({
       where: { id, isDeleted: false },
@@ -126,6 +157,17 @@ export class Video extends BaseService<VideoEntity> {
         select: ["id", "name"],
       });
       if (!product) return { status: StatusCode.NOT_FOUND };
+    }
+
+    const sortScope: Record<string, string> | undefined = product?.id
+      ? { productId: product.id }
+      : undefined;
+
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      video.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: video.id,
+        scope: sortScope,
+      });
     }
 
     this.repository.merge(video, {

@@ -17,7 +17,6 @@ router.post(
   "/create-member",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "image", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(TeamMemberDto, "body", "create"),
@@ -28,7 +27,6 @@ router.put(
   "/update-member/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "image", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(TeamMemberDto, "body", "update"),
@@ -49,7 +47,6 @@ router.delete(
   "/delete-member/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.deleteMember.bind(controller))
 );
 

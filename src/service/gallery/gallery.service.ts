@@ -71,10 +71,15 @@ export class Gallery extends BaseService<GalleryEntity> {
     });
     if (!product) return { status: StatusCode.NOT_FOUND };
 
+    const sortOrder = await this.resolveSortOrder(data.sortOrder, {
+      scope: { productId: product.id },
+    });
+
     const gallery = this.repository.create({
       caption: data.caption,
       isHome: data.isHome ?? false,
       product,
+      sortOrder,
     });
 
     const savedGallery = await this.repository.save(gallery);
@@ -125,7 +130,8 @@ export class Gallery extends BaseService<GalleryEntity> {
       .andWhere(search ? "gallery.caption ILIKE :search" : "TRUE", {
         search: `%${search}%`,
       })
-      .orderBy("gallery.createdAt", "DESC")
+      .orderBy("gallery.sortOrder", "ASC")
+      .addOrderBy("gallery.createdAt", "DESC")
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -169,10 +175,37 @@ export class Gallery extends BaseService<GalleryEntity> {
     return { status: StatusCode.OK, gallery };
   }
 
+  async getGalleriesByProductId(
+    productId: string
+  ): Promise<{ status: number; galleries?: GalleryEntity[] }> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId, isDeleted: false },
+      select: ["id"],
+    });
+
+    if (!product) return { status: StatusCode.NOT_FOUND };
+
+    const galleries = await this.repository
+      .createQueryBuilder("gallery")
+      .leftJoin("gallery.product", "product", "product.isDeleted = false")
+      .leftJoinAndSelect(
+        "gallery.mediaAsset",
+        "mediaAsset",
+        "mediaAsset.isDeleted = false"
+      )
+      .where("gallery.isDeleted = false")
+      .andWhere("product.id = :productId", { productId })
+      .orderBy("gallery.sortOrder", "ASC")
+      .addOrderBy("gallery.createdAt", "DESC")
+      .getMany();
+
+    return { status: StatusCode.OK, galleries };
+  }
+
   async updateGallery(id: string, data: IGallery): Promise<{ status: number }> {
     const gallery = await this.repository.findOne({
       where: { id, isDeleted: false },
-      relations: ["mediaAsset"],
+      relations: ["mediaAsset", "product"],
     });
 
     if (!gallery) return { status: StatusCode.NOT_FOUND };
@@ -183,6 +216,19 @@ export class Gallery extends BaseService<GalleryEntity> {
           select: ["id", "name"],
         })
       : undefined;
+
+    const sortScope: Record<string, string> | undefined = (
+      product ?? gallery.product
+    )?.id
+      ? { productId: (product ?? gallery.product)!.id }
+      : undefined;
+
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      gallery.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: gallery.id,
+        scope: sortScope,
+      });
+    }
 
     this.repository.merge(gallery, {
       caption: data.caption ?? gallery.caption,
@@ -246,7 +292,11 @@ export class Gallery extends BaseService<GalleryEntity> {
 
   async hardDeleteGalleries(
     ids: string[] | string
-  ): Promise<{ status: number; deletedGalleryIds: string[]; deletedAssets: number }> {
+  ): Promise<{
+    status: number;
+    deletedGalleryIds: string[];
+    deletedAssets: number;
+  }> {
     if (!Array.isArray(ids)) ids = [ids];
     if (!ids.length)
       return {

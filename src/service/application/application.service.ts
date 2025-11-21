@@ -75,6 +75,7 @@ export class Application extends BaseService<ApplicationEntity> {
     }
 
     const [applications, total] = await query
+      .addOrderBy("application.sortOrder", "ASC")
       .orderBy("application.createdAt", "DESC")
       .skip(skip)
       .take(limit)
@@ -123,7 +124,11 @@ export class Application extends BaseService<ApplicationEntity> {
     if (!application) return { status: StatusCode.NOT_FOUND };
 
     const oldFilesToDelete: string[] = [];
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      application.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: application.id,
+      });
+    }
     if (data.resumeUrl && application.resumeUrl !== data.resumeUrl)
       oldFilesToDelete.push(application.resumeUrl);
 

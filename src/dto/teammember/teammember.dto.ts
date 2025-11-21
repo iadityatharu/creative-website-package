@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+} from "class-validator";
 import { IsE164Phone } from "../../decorator/isE164Phone.decorator";
 
 export class TeamMemberDto {
@@ -42,4 +48,8 @@ export class TeamMemberDto {
   @IsOptional({ groups: ["create", "update"] })
   @IsString({ groups: ["create", "update"] })
   instagram?: string;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

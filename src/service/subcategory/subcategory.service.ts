@@ -32,6 +32,9 @@ export class SubCategory extends BaseService<SubCategoryEntity> {
       category: category,
       coverImage: data.coverImage ?? undefined,
       description: data.description ?? undefined,
+      sortOrder: await this.resolveSortOrder(data.sortOrder, {
+        scope: category?.id ? { categoryId: category.id } : undefined,
+      }),
     });
 
     await this.repository.save(subCategory);
@@ -53,7 +56,8 @@ export class SubCategory extends BaseService<SubCategoryEntity> {
         "category.isDeleted = false"
       )
       .where("subCategory.isDeleted = :isDeleted", { isDeleted: false })
-      .orderBy("subCategory.createdAt", "DESC")
+      .orderBy("subCategory.sortOrder", "ASC")
+      .addOrderBy("subCategory.createdAt", "DESC")
       .skip(skip)
       .take(limit);
 
@@ -172,7 +176,10 @@ export class SubCategory extends BaseService<SubCategoryEntity> {
     id: string,
     data: ISubCategory
   ): Promise<{ status: number }> {
-    const subCategory = await this.repository.findOne({ where: { id } });
+    const subCategory = await this.repository.findOne({
+      where: { id },
+      relations: ["category"],
+    });
     if (!subCategory) return { status: StatusCode.NOT_FOUND };
 
     const previousCoverImage = subCategory.coverImage ?? null;
@@ -190,6 +197,16 @@ export class SubCategory extends BaseService<SubCategoryEntity> {
 
     if (incomingCoverImage !== undefined) {
       updatePayload.coverImage = incomingCoverImage;
+    }
+
+    const targetCategoryId =
+      data.categoryId ?? subCategory.category?.id ?? undefined;
+
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      updatePayload.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: subCategory.id,
+        scope: targetCategoryId ? { categoryId: targetCategoryId } : undefined,
+      });
     }
 
     if (data.categoryId !== undefined) {
@@ -243,9 +260,11 @@ export class SubCategory extends BaseService<SubCategoryEntity> {
     return { status: StatusCode.OK, deletedSubCategoryIds: ids };
   }
 
-  async hardDeleteSubCategories(
-    ids: string[] | string
-  ): Promise<{ status: number; deletedSubCategoryIds: string[]; deletedAssets: number }> {
+  async hardDeleteSubCategories(ids: string[] | string): Promise<{
+    status: number;
+    deletedSubCategoryIds: string[];
+    deletedAssets: number;
+  }> {
     if (!Array.isArray(ids)) ids = [ids];
     if (!ids.length)
       return {

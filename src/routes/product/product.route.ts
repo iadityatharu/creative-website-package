@@ -16,7 +16,6 @@ router.post(
   "/create-product",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "detailImage", maxCount: 10 },
@@ -32,7 +31,6 @@ router.put(
   "/update-product/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "detailImage", maxCount: 10 },
@@ -48,7 +46,6 @@ router.get(
   "/export/excel",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(product.exportProductsToExcel.bind(product))
 );
 
@@ -56,8 +53,17 @@ router.get(
   "/export/pdf",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(product.exportProductsToPdf.bind(product))
+);
+
+router.get(
+  "/get-all-products",
+  asyncHandler(product.getAllProducts.bind(product))
+);
+
+router.get(
+  "/search-products",
+  asyncHandler(product.searchProducts.bind(product))
 );
 
 router.get(
@@ -74,7 +80,6 @@ router.delete(
   "/delete-product/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(product.deleteProduct.bind(product))
 );
 

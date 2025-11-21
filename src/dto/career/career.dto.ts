@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsNumber,
 } from "class-validator";
 import { JobType } from "../../constant/enum.constant";
 
@@ -44,4 +45,8 @@ export class CareerDto {
   @IsBoolean({ groups: ["create", "update"] })
   @IsOptional({ groups: ["create", "update"] })
   isOpen?: boolean;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

@@ -27,4 +27,5 @@ export interface ISeoMetadata {
   manifestUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

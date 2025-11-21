@@ -17,7 +17,6 @@ router.post(
   "/create-subcategory",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "coverImage", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(SubCategoryDto, "body", "create"),
@@ -28,7 +27,6 @@ router.put(
   "/update-subcategory/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "coverImage", maxCount: 1 }]),
   fileUploadHandler(false),
   validateRequest(SubCategoryDto, "body", "update"),
@@ -54,7 +52,6 @@ router.delete(
   "/delete-subcategory/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(subCategory.deleteSubCategory.bind(subCategory))
 );
 

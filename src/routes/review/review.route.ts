@@ -16,7 +16,6 @@ router.post(
   "/create-review",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ReviewDto, "body", "create"),
   asyncHandler(review.createReview.bind(review))
 );
@@ -29,7 +28,6 @@ router.put(
   "/update-review/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ReviewDto, "body", "update"),
   asyncHandler(review.updateReview.bind(review))
 );
@@ -38,7 +36,6 @@ router.delete(
   "/delete-review/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(review.deleteReview.bind(review))
 );
 

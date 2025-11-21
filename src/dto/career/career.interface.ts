@@ -13,4 +13,5 @@ export interface ICareer {
   isOpen?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

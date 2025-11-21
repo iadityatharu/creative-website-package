@@ -36,8 +36,8 @@ export class ProductDownloadCategoryDto {
   @IsOptional({ groups: ["create", "update"] })
   isActive?: boolean;
 
-  @IsNumber({}, { groups: ["create", "update"] })
   @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
   sortOrder?: number;
 
   @IsOptional({ groups: ["create", "update"] })

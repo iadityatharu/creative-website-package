@@ -12,7 +12,6 @@ router.get(
   "/overview",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getOverview.bind(controller))
 );
 
@@ -20,7 +19,6 @@ router.get(
   "/top-categories",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getTopCategories.bind(controller))
 );
 
@@ -28,7 +26,6 @@ router.get(
   "/:id/performance",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.getCategoryPerformance.bind(controller))
 );
 

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class VideoDto {
   @IsString({ groups: ["create", "update"] })
@@ -20,4 +20,8 @@ export class VideoDto {
   @IsNotEmpty({ groups: ["create"] })
   @IsOptional({ groups: ["update"] })
   productId?: string;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

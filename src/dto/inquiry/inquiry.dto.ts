@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from "class-validator";
 import { IsE164Phone } from "../../decorator/isE164Phone.decorator";
 
 export class InquiryDto {
@@ -31,4 +31,7 @@ export class InquiryDto {
   @IsOptional({ groups: ["update"] })
   productId?: string;
 
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

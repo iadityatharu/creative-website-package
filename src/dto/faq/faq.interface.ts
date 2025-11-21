@@ -5,4 +5,5 @@ export interface IFaq {
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

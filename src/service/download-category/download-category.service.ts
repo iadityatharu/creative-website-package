@@ -15,9 +15,7 @@ export class ProductDownloadCategoryService extends BaseService<ProductDownloadC
     super(ProductDownloadCategory);
   }
 
-  async hardDeleteCategories(
-    ids: string[] | string
-  ): Promise<{
+  async hardDeleteCategories(ids: string[] | string): Promise<{
     status: number;
     deletedCategoryIds: string[];
     deletedAssets: number;
@@ -187,7 +185,11 @@ export class ProductDownloadCategoryService extends BaseService<ProductDownloadC
       });
       if (!product) return { status: StatusCode.NOT_FOUND };
     }
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      product.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: product.id,
+      });
+    }
     const { productId, ...rest } = data;
     this.repository.merge(category, rest);
 

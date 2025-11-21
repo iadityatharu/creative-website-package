@@ -17,7 +17,7 @@ router.post(
   "/create-seo",
   authentication,
   isVerifiedUser,
-  isAdmin,
+  isSudoAdmin,
   upload.fields([
     { name: "openGraphImages", maxCount: 1 },
     { name: "twitterImages", maxCount: 1 },
@@ -48,7 +48,7 @@ router.put(
   "/update-seo/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
+  isSudoAdmin,
   upload.fields([
     { name: "openGraphImages", maxCount: 1 },
     { name: "twitterImages", maxCount: 1 },
@@ -64,7 +64,7 @@ router.delete(
   "/delete-seo/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
+  isSudoAdmin,
   asyncHandler(controller.deleteSeoMetadata.bind(controller))
 );
 

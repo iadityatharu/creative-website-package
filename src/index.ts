@@ -10,7 +10,6 @@ import { Logger } from "./utils/chalk";
 const PORT = process.env.SERVER_PORT || 5436;
 
 const numCPUs = os.cpus().length;
-
 const startServer = async () => {
   try {
     Logger.info("Connecting to PostgreSQL...");

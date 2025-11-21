@@ -68,7 +68,8 @@ export class Contact extends BaseService<ContactEntity> {
     }
 
     query
-      .orderBy("contact.createdAt", "DESC")
+      .orderBy("contact.sortOrder", "ASC")
+      .addOrderBy("contact.createdAt", "DESC")
       .skip(skip)
       .take(limit)
       .select([

@@ -7,6 +7,7 @@ import { ProductDownload } from "./product-download";
 import { ProductDownloadCategory } from "./download-category";
 import { ProductType } from "../constant/enum.constant";
 
+
 @Entity("products")
 @Index(["name", "slug"])
 export class Product extends Base {

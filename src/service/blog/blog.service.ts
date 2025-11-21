@@ -72,7 +72,11 @@ export class BlogPost extends BaseService<BlogPostEntity> {
       });
     }
 
-    query.orderBy("blog.publishedAt", "DESC").skip(skip).take(limit);
+    query
+      .orderBy("blog.sortOrder", "ASC")
+      .addOrderBy("blog.createdAt", "DESC")
+      .skip(skip)
+      .take(limit);
 
     const [blogs, total] = await query.getManyAndCount();
 
@@ -120,11 +124,10 @@ export class BlogPost extends BaseService<BlogPostEntity> {
 
     this.filterDeletedMediaAssets(blog);
 
-    const seoMetadata =
-      await this.seoMetadataService.getSeoMetadataForEntity(
-        SeoEntityType.BLOG,
-        blog.id
-      );
+    const seoMetadata = await this.seoMetadataService.getSeoMetadataForEntity(
+      SeoEntityType.BLOG,
+      blog.id
+    );
 
     const similarBlogs = await this.getSimilarBlogs(blog, 4);
     const similarIds = similarBlogs.map((item) => item.id);
@@ -168,7 +171,11 @@ export class BlogPost extends BaseService<BlogPostEntity> {
       if (!user) return { status: StatusCode.NOT_FOUND };
       blog.author = user;
     }
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      blog.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: blog.id,
+      });
+    }
     const { author, ...rest } = data;
     this.repository.merge(blog, rest);
     await this.repository.save(blog);
@@ -216,9 +223,7 @@ export class BlogPost extends BaseService<BlogPostEntity> {
     return { status: StatusCode.OK, deletedBlogIds: ids };
   }
 
-  async hardDeleteBlogs(
-    ids: string[] | string
-  ): Promise<{
+  async hardDeleteBlogs(ids: string[] | string): Promise<{
     status: number;
     deletedBlogIds: string[];
     deletedAssets: number;
@@ -353,30 +358,34 @@ export class BlogPost extends BaseService<BlogPostEntity> {
       const qb = this.repository
         .createQueryBuilder("blog")
         .leftJoinAndSelect("blog.author", "author")
-        .leftJoinAndSelect("blog.mediaAssets", "media", "media.isDeleted = false")
+        .leftJoinAndSelect(
+          "blog.mediaAssets",
+          "media",
+          "media.isDeleted = false"
+        )
         .where("blog.isDeleted = false")
         .andWhere("blog.id != :id", { id: baseBlog.id })
         .orderBy("blog.publishedAt", "DESC")
         .addOrderBy("blog.createdAt", "DESC")
         .take(remaining);
 
-    if (seenIds.size > 1) {
-      qb.andWhere("blog.id NOT IN (:...excludeIds)", {
-        excludeIds: Array.from(seenIds),
-      });
-    }
+      if (seenIds.size > 1) {
+        qb.andWhere("blog.id NOT IN (:...excludeIds)", {
+          excludeIds: Array.from(seenIds),
+        });
+      }
 
-    configure?.(qb);
+      configure?.(qb);
 
-    const results = await qb.getMany();
+      const results = await qb.getMany();
       for (const candidate of results) {
         this.filterDeletedMediaAssets(candidate);
-      if (seenIds.has(candidate.id)) continue;
-      seenIds.add(candidate.id);
-      similar.push(candidate);
-      if (similar.length >= limit) break;
-    }
-  };
+        if (seenIds.has(candidate.id)) continue;
+        seenIds.add(candidate.id);
+        similar.push(candidate);
+        if (similar.length >= limit) break;
+      }
+    };
 
     if (baseBlog.author?.id) {
       await fetch((qb) =>
@@ -395,9 +404,7 @@ export class BlogPost extends BaseService<BlogPostEntity> {
 
   private filterDeletedMediaAssets(blog: BlogPostEntity) {
     if (Array.isArray(blog.mediaAssets)) {
-      blog.mediaAssets = blog.mediaAssets.filter(
-        (asset) => !asset.isDeleted
-      );
+      blog.mediaAssets = blog.mediaAssets.filter((asset) => !asset.isDeleted);
     }
   }
 }

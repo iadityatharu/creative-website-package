@@ -17,7 +17,6 @@ router.post(
   "/create-download",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.single("downloadUrl"),
   fileUploadHandler(false),
   validateRequest(ProductDownloadDto, "body", "create"),
@@ -28,7 +27,6 @@ router.put(
   "/update-download/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.single("downloadUrl"),
   fileUploadHandler(false),
   validateRequest(ProductDownloadDto, "body", "update"),
@@ -46,6 +44,11 @@ router.get(
 );
 
 router.get(
+  "/get-downloads-by-product/:productId",
+  asyncHandler(controller.getDownloadsByProductId.bind(controller))
+);
+
+router.get(
   "/download-file/:id",
   asyncHandler(controller.downloadFile.bind(controller))
 );
@@ -54,7 +57,6 @@ router.delete(
   "/delete-download/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.deleteDownload.bind(controller))
 );
 

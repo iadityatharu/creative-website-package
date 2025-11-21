@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsNotEmpty,
   IsArray,
+  IsNumber,
 } from "class-validator";
 
 export class GalleryDto {
@@ -24,4 +25,8 @@ export class GalleryDto {
   @IsArray({ groups: ["create", "update"] })
   @IsString({ each: true, groups: ["create", "update"] })
   removeUrls?: string[];
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

@@ -1,8 +1,7 @@
 # Plaza Sales API
 
 Plaza Sales is a TypeScript-based REST API that powers a product catalogue, content management, and analytics platform.  
-It exposes role-aware endpoints for administering brands, categories, products, inquiries, blogs, and more while
-integrating with PostgreSQL (TypeORM), Redis caching/queues, Cloudflare R2 for media, and BullMQ-powered email
+It exposes role-aware endpoints for administering categories, products, inquiries, blogs, and more while integrating with PostgreSQL (TypeORM), Redis caching/queues, Cloudflare R2 for media, and BullMQ-powered email
 notifications.
 
 ## Table of Contents
@@ -35,10 +34,10 @@ notifications.
 ## Features
 
 - **Role-based Auth**: Access tokens, refresh tokens, and password history enforcement that blocks password reuse for six months.
-- **Comprehensive CMS** for brands, categories, products, blogs, FAQs, team members, careers, and marketing assets.
+- **Comprehensive CMS** for categories, products, blogs, FAQs, team members, careers, and marketing assets.
 - **Lead Management** with inquiries, replies, and contacts plus Excel/PDF export pipelines.
 - **Document & Media Handling** with Cloudflare R2 uploads, validation, and deletion utilities.
-- **Analytics APIs** to surface aggregated brand, category, user, and SEO metrics.
+- **Analytics APIs** to surface aggregated category, user, and SEO metrics.
 - **Redis-backed caching** and **rate limiting** to keep responses fast and resilient to abuse.
 - **Email queue** powered by BullMQ for background delivery of transactional messages.
 - **Developer friendly tooling** including Jest test harness, seeding utilities, and Docker compose for local stacks.

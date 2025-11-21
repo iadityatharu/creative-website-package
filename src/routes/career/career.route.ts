@@ -16,7 +16,6 @@ router.post(
   "/create-career",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(CareerDto, "body", "create"),
   asyncHandler(career.createCareer.bind(career))
 );
@@ -32,7 +31,6 @@ router.put(
   "/update-career/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(CareerDto, "body", "update"),
   asyncHandler(career.updateCareer.bind(career))
 );
@@ -41,7 +39,6 @@ router.delete(
   "/delete-career/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(career.deleteCareer.bind(career))
 );
 

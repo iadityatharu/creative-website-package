@@ -7,4 +7,5 @@ export interface IGallery {
   productId: string;
   mediaUrls?: string[];
   mediaTypes?: MediaType[];
+  sortOrder?: number;
 }

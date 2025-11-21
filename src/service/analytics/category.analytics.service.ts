@@ -51,12 +51,12 @@ export class CategoryAnalyticsService {
         "category.id AS id",
         "category.title AS title",
         "category.slug AS slug",
-        "COUNT(DISTINCT sub.id) AS subcategoryCount",
-        "COUNT(product.id) AS productCount",
+        'COUNT(DISTINCT sub.id) AS "subcategoryCount"',
+        'COUNT(product.id) AS "productCount"',
       ])
       .groupBy("category.id")
-      .orderBy("productCount", "DESC")
-      .addOrderBy("subcategoryCount", "DESC")
+      .orderBy('"productCount"', "DESC")
+      .addOrderBy('"subcategoryCount"', "DESC")
       .limit(limit)
       .getRawMany();
 
@@ -64,8 +64,11 @@ export class CategoryAnalyticsService {
       id: row.id,
       title: row.title,
       slug: row.slug,
-      subcategoryCount: Number(row.subcategoryCount) || 0,
-      productCount: Number(row.productCount) || 0,
+      subcategoryCount:
+        Number((row as any).subcategoryCount ?? (row as any).subcategorycount) ||
+        0,
+      productCount:
+        Number((row as any).productCount ?? (row as any).productcount) || 0,
     }));
 
     return { status: StatusCode.OK, data: { categories } };
@@ -109,14 +112,14 @@ export class CategoryAnalyticsService {
           .select([
             "sub.id AS id",
             "sub.title AS title",
-            "COUNT(product.id) AS productCount",
-            "SUM(CASE WHEN product.isPopular THEN 1 ELSE 0 END) AS popularCount",
-            "SUM(CASE WHEN product.isPublished THEN 1 ELSE 0 END) AS publishedCount",
+            'COUNT(product.id) AS "productCount"',
+            'SUM(CASE WHEN product.isPopular THEN 1 ELSE 0 END) AS "popularCount"',
+            'SUM(CASE WHEN product.isPublished THEN 1 ELSE 0 END) AS "publishedCount"',
           ])
           .where("product.isDeleted = false")
           .andWhere("sub.categoryId = :categoryId", { categoryId: id })
           .groupBy("sub.id")
-          .orderBy("productCount", "DESC")
+          .orderBy('"productCount"', "DESC")
           .getRawMany(),
       ]);
 
@@ -142,9 +145,12 @@ export class CategoryAnalyticsService {
     const subcategoryBreakdown = subStats.map((row) => ({
       id: row.id,
       title: row.title,
-      productCount: Number(row.productCount) || 0,
-      popularCount: Number(row.popularCount) || 0,
-      publishedCount: Number(row.publishedCount) || 0,
+      productCount:
+        Number((row as any).productCount ?? (row as any).productcount) || 0,
+      popularCount:
+        Number((row as any).popularCount ?? (row as any).popularcount) || 0,
+      publishedCount:
+        Number((row as any).publishedCount ?? (row as any).publishedcount) || 0,
     }));
 
     return {

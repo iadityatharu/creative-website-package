@@ -8,4 +8,5 @@ export interface IReview {
   isPublished?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

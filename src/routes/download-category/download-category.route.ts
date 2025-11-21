@@ -16,7 +16,6 @@ router.post(
   "/create-category",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ProductDownloadCategoryDto, "body", "create"),
   asyncHandler(controller.createCategory.bind(controller))
 );
@@ -25,7 +24,6 @@ router.put(
   "/update-category/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ProductDownloadCategoryDto, "body", "update"),
   asyncHandler(controller.updateCategory.bind(controller))
 );
@@ -44,7 +42,6 @@ router.delete(
   "/delete-category/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(controller.deleteCategory.bind(controller))
 );
 

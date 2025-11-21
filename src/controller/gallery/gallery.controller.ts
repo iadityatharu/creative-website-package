@@ -94,6 +94,25 @@ export class Gallery {
     });
   }
 
+  async getGalleriesByProductId(
+    req: AuthenticatedRequest<{ productId: string }>,
+    res: Response
+  ) {
+    const { productId } = req.params;
+    const result = await this.galleryService.getGalleriesByProductId(
+      productId
+    );
+
+    if (result.status === StatusCode.NOT_FOUND)
+      throw new expressError(StatusCode.NOT_FOUND, "Product not found");
+
+    return res.status(StatusCode.OK).json({
+      status: StatusCode.OK,
+      message: Message.FOUND,
+      galleries: result.galleries,
+    });
+  }
+
   async updateGallery(
     req: AuthenticatedRequest<{ id: string }> & {
       body: IGallery & { removeUrls?: string[] };

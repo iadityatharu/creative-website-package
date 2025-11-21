@@ -71,11 +71,13 @@ export class Category extends BaseService<CategoryEntity> {
       where: [{ slug: data.slug }],
     });
     if (existing) return { status: StatusCode.ALREADY_EXIST };
+    const sortOrder = await this.resolveSortOrder(data.sortOrder);
     const category = this.repository.create({
       title: data.title,
       slug: data.slug,
       coverImage: data.coverImage ?? undefined,
       description: data.description ?? undefined,
+      sortOrder,
     });
 
     await this.repository.save(category);
@@ -91,6 +93,12 @@ export class Category extends BaseService<CategoryEntity> {
 
     const query = this.repository
       .createQueryBuilder("category")
+      .select([
+        "category.id",
+        "category.title",
+        "category.slug",
+        "category.coverImage",
+      ])
       .addSelect("category.createdAt")
       .addSelect("category.sortOrder")
       .where("category.isDeleted = :isDeleted", { isDeleted: false });
@@ -175,7 +183,9 @@ export class Category extends BaseService<CategoryEntity> {
     id: string,
     data: ICategory
   ): Promise<{ status: number }> {
-    const category = await this.repository.findOne({ where: { id } });
+    const category = await this.repository.findOne({
+      where: { id },
+    });
     if (!category) return { status: StatusCode.NOT_FOUND };
 
     const previousCoverImage = category.coverImage ?? null;
@@ -193,6 +203,12 @@ export class Category extends BaseService<CategoryEntity> {
 
     if (incomingCoverImage !== undefined) {
       updatePayload.coverImage = incomingCoverImage;
+    }
+
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      updatePayload.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: category.id,
+      });
     }
 
     this.repository.merge(category, updatePayload);
@@ -339,7 +355,7 @@ export class Category extends BaseService<CategoryEntity> {
         new Brackets((qb) =>
           qb
             .orWhere("category.title ILIKE :search", { search: searchParam })
-          .orWhere("category.slug ILIKE :search", { search: searchParam })
+            .orWhere("category.slug ILIKE :search", { search: searchParam })
         )
       );
     }

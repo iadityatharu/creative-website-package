@@ -22,7 +22,6 @@ router.get(
   "/export/excel",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(inquiry.exportInquiriesToExcel.bind(inquiry))
 );
 
@@ -30,7 +29,6 @@ router.get(
   "/export/pdf",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(inquiry.exportInquiriesToPdf.bind(inquiry))
 );
 
@@ -52,7 +50,6 @@ router.put(
   "/update-inquiry/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(InquiryDto, "body", "update"),
   asyncHandler(inquiry.updateInquiry.bind(inquiry))
 );
@@ -61,7 +58,6 @@ router.delete(
   "/delete-inquiry/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(inquiry.deleteInquiry.bind(inquiry))
 );
 

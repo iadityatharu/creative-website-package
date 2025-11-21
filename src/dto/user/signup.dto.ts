@@ -6,6 +6,7 @@ import {
   Matches,
   IsEnum,
   IsBoolean,
+  IsNumber,
 } from "class-validator";
 import { Gender, UserRole } from "../../constant/enum.constant";
 import { regex } from "../../constant/regex.constant";
@@ -68,4 +69,8 @@ export class UserDto {
   })
   @IsOptional({ groups: ["create", "update"] })
   role?: UserRole;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

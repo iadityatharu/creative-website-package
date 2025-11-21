@@ -34,23 +34,19 @@ export class ProductDownloadService extends BaseService<ProductDownload> {
     ) {
       return { status: StatusCode.BAD_REQUEST };
     }
-
     const product = await this.productRepo.findOne({
       where: { id: data.productId, isDeleted: false },
       select: ["id"],
     });
     if (!product) return { status: StatusCode.NOT_FOUND };
-
     const category = await this.categoryRepo.findOne({
       where: { id: data.categoryId, isDeleted: false },
       relations: ["product"],
     });
     if (!category) return { status: StatusCode.NOT_FOUND };
-
     if (category.product && category.product.id !== product.id) {
       return { status: StatusCode.BAD_REQUEST };
     }
-
     const { productId, categoryId, sizeBytes, ...rest } = data;
     const download = this.repository.create({
       ...rest,
@@ -161,6 +157,33 @@ export class ProductDownloadService extends BaseService<ProductDownload> {
     return { status: StatusCode.OK, download };
   }
 
+  async getDownloadsByProductId(
+    productId: string
+  ): Promise<{ status: number; downloads?: ProductDownload[] }> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId, isDeleted: false },
+      select: ["id"],
+    });
+
+    if (!product) return { status: StatusCode.NOT_FOUND };
+
+    const downloads = await this.repository
+      .createQueryBuilder("download")
+      .leftJoin("download.product", "product", "product.isDeleted = false")
+      .leftJoinAndSelect(
+        "download.category",
+        "category",
+        "category.isDeleted = false"
+      )
+      .where("download.isDeleted = false")
+      .andWhere("product.id = :productId", { productId })
+      .orderBy("download.sortOrder", "ASC")
+      .addOrderBy("download.createdAt", "DESC")
+      .getMany();
+
+    return { status: StatusCode.OK, downloads };
+  }
+
   async updateDownload(
     id: string,
     data: IProductDownload
@@ -209,7 +232,12 @@ export class ProductDownloadService extends BaseService<ProductDownload> {
       if (!category) return { status: StatusCode.NOT_FOUND };
     }
 
-    if (category && product && category.product && category.product.id !== product.id) {
+    if (
+      category &&
+      product &&
+      category.product &&
+      category.product.id !== product.id
+    ) {
       return { status: StatusCode.BAD_REQUEST };
     }
 
@@ -219,7 +247,11 @@ export class ProductDownloadService extends BaseService<ProductDownload> {
     if (sizeBytes !== undefined) {
       download.sizeBytes = this.normalizeSizeBytes(sizeBytes);
     }
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      download.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: download.id,
+      });
+    }
     if (product) {
       (download as any).product = product;
     }
@@ -266,9 +298,11 @@ export class ProductDownloadService extends BaseService<ProductDownload> {
     return { status: StatusCode.OK, deletedDownloadIds: ids };
   }
 
-  async hardDeleteDownloads(
-    ids: string[] | string
-  ): Promise<{ status: number; deletedDownloadIds: string[]; deletedAssets: number }> {
+  async hardDeleteDownloads(ids: string[] | string): Promise<{
+    status: number;
+    deletedDownloadIds: string[];
+    deletedAssets: number;
+  }> {
     if (!Array.isArray(ids)) ids = [ids];
 
     const downloads = await this.repository.find({

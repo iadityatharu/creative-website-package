@@ -17,7 +17,6 @@ router.post(
   "/create-blog",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "mediaUrls", maxCount: 8 },
@@ -31,7 +30,6 @@ router.put(
   "/update-blog/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "mediaUrls", maxCount: 8 },
@@ -49,7 +47,6 @@ router.delete(
   "/delete-blog/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(blog.deleteBlog.bind(blog))
 );
 
@@ -64,7 +61,7 @@ router.put(
   "/recover-blogs",
   authentication,
   isVerifiedUser,
-  isAdmin,
+  isSudoAdmin,
   validateRequest(RecoverDto, "body"),
   asyncHandler(blog.recoverBlogs.bind(blog))
 );

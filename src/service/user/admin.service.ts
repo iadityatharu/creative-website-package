@@ -76,7 +76,11 @@ export class Admin extends BaseService<User> {
       user.profilePicture !== data.profilePicture
     )
       oldProfileUrl = user.profilePicture;
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      user.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: user.id,
+      });
+    }
     Object.assign(user, data);
     await this.repository.save(user);
 
@@ -140,7 +144,7 @@ export class Admin extends BaseService<User> {
 
     const [users, total] = await this.repository.findAndCount({
       where,
-      order: { sortOrder: "ASC" },
+      order: { sortOrder: "ASC", createdAt: "DESC" },
       skip,
       take: limit,
     });

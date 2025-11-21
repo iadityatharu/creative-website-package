@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, IsEnum } from "class-validator";
+import { IsString, IsOptional, IsNotEmpty, IsEnum, IsNumber } from "class-validator";
 import { ApplicationStatus } from "../../constant/enum.constant";
 import { IsE164Phone } from "../../decorator/isE164Phone.decorator";
 
@@ -29,4 +29,8 @@ export class ApplicationDto {
   @IsOptional({ groups: ["create", "update"] })
   @IsString({ groups: ["create", "update"] })
   careerId?: string;
+
+   @IsOptional({ groups: ["create", "update"] })
+   @IsNumber({}, { groups: ["create", "update"] })
+   sortOrder?: number;
 }

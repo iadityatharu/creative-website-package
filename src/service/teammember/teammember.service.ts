@@ -26,7 +26,7 @@ export class TeamMember extends BaseService<TeamMemberEntity> {
       where: { isDeleted: false },
       skip,
       take: limit,
-      order: { fullname: "ASC" },
+      order: { sortOrder: "ASC", createdAt: "DESC" },
     });
 
     return {
@@ -59,6 +59,11 @@ export class TeamMember extends BaseService<TeamMemberEntity> {
     const oldFiles: string[] = [];
     if (data.image && member.image && member.image !== data.image) {
       oldFiles.push(member.image);
+    }
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      member.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: member.id,
+      });
     }
 
     this.repository.merge(member, data);

@@ -17,7 +17,6 @@ router.post(
   "/create-gallery",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "mediaAsset", maxCount: 8 }]),
   fileUploadHandler(false),
   validateRequest(GalleryDto, "body", "create"),
@@ -28,7 +27,6 @@ router.put(
   "/update-gallery/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   upload.fields([{ name: "mediaAsset", maxCount: 8 }]),
   fileUploadHandler(false),
   validateRequest(GalleryDto, "body", "update"),
@@ -45,11 +43,15 @@ router.get(
   asyncHandler(gallery.getGalleryById.bind(gallery))
 );
 
+router.get(
+  "/get-galleries-by-product/:productId",
+  asyncHandler(gallery.getGalleriesByProductId.bind(gallery))
+);
+
 router.delete(
   "/delete-gallery/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(gallery.deleteGallery.bind(gallery))
 );
 

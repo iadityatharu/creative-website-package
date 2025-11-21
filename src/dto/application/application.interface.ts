@@ -10,4 +10,5 @@ export interface IApplication {
   coverLetterUrl?: string;
   status?: ApplicationStatus;
   careerId?: string;
+  sortOrder?: number;
 }

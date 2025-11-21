@@ -18,7 +18,7 @@ export abstract class Base extends BaseEntity {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ type: "int", default: 1 })
   sortOrder: number;
 
   @Exclude()

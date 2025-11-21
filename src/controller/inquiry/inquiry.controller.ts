@@ -23,7 +23,7 @@ export class Inquiry {
     const result = await this.inquiryService.createInquiry(data);
 
     if (result.status === StatusCode.NOT_FOUND)
-      throw new expressError(StatusCode.NOT_FOUND, "Product not found");
+      throw new expressError(StatusCode.NOT_FOUND, "Invalid product reference");
 
     deleteCache("inquiries:*").catch(console.error);
 

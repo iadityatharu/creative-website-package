@@ -16,7 +16,6 @@ router.post(
   "/create-video",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(VideoDto, "body", "create"),
   asyncHandler(videoController.createVideo.bind(videoController))
 );
@@ -25,7 +24,6 @@ router.put(
   "/update-video/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(VideoDto, "body", "update"),
   asyncHandler(videoController.updateVideo.bind(videoController))
 );
@@ -40,11 +38,15 @@ router.get(
   asyncHandler(videoController.getVideoById.bind(videoController))
 );
 
+router.get(
+  "/get-videos-by-product/:productId",
+  asyncHandler(videoController.getVideosByProductId.bind(videoController))
+);
+
 router.delete(
   "/delete-video/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(videoController.deleteVideo.bind(videoController))
 );
 

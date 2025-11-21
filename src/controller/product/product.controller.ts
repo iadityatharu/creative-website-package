@@ -85,11 +85,63 @@ export class Product {
       );
 
     deleteCache("products:*").catch(console.error);
-    deleteCache("products:subcategory*").catch(console.error);
 
     return res
       .status(result.status)
       .json({ status: result.status, message: "Product created successfully" });
+  }
+
+  async getAllProducts(req: AuthenticatedRequest, res: Response) {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string)?.trim();
+
+    if (search) {
+      throw new expressError(
+        StatusCode.BAD_REQUEST,
+        "Use /search-products for filtered queries"
+      );
+    }
+
+    const cacheKey = `products:${page}:${limit}:${search}`;
+    let cached = await getCache(cacheKey);
+
+    if (cached) {
+      cached = JSON.parse(cached);
+      return res
+        .status(StatusCode.OK)
+        .json({ status: StatusCode.OK, data: cached, cached: true });
+    }
+
+    const result = await this.productService.getAllProducts(page, limit);
+    await setCache(cacheKey, JSON.stringify(result.data));
+
+    return res
+      .status(StatusCode.OK)
+      .json({ status: result.status, data: result.data, cached: false });
+  }
+
+  async searchProducts(req: AuthenticatedRequest, res: Response) {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string)?.trim();
+
+    if (!search) {
+      throw new expressError(
+        StatusCode.BAD_REQUEST,
+        "Search term is required"
+      );
+    }
+
+    const result = await this.productService.searchProducts(
+      page,
+      limit,
+      search
+    );
+
+    return res
+      .status(result.status)
+      .json({ status: result.status, data: result.data });
   }
 
   async getProductsBySubcategory(
@@ -100,31 +152,18 @@ export class Product {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    const cacheKey = `products:subcategory:${subcategoryId}:${page}:${limit}`;
-    let cached = await getCache(cacheKey);
-
-    if (cached) {
-      return res
-        .status(StatusCode.OK)
-        .json({ status: StatusCode.OK, data: cached, cached: true });
-    }
-
     const result = await this.productService.getProductsBySubCategory(
       subcategoryId,
       page,
       limit
     );
 
-    if (result.status === StatusCode.OK && result.data) {
-      await setCache(cacheKey, result.data);
-    }
-
     if (result.status === StatusCode.NOT_FOUND)
       throw new expressError(StatusCode.NOT_FOUND, "Subcategory not found");
 
     return res
       .status(StatusCode.OK)
-      .json({ status: result.status, data: result.data, cached: false });
+      .json({ status: result.status, data: result.data });
   }
 
   async exportProductsToExcel(req: AuthenticatedRequest, res: Response) {
@@ -327,7 +366,6 @@ export class Product {
       throw new expressError(StatusCode.NOT_FOUND, "Product not found");
 
     deleteCache("products:*").catch(console.error);
-    deleteCache("products:subcategory*").catch(console.error);
 
     return res.status(StatusCode.OK).json({
       status: result.status,
@@ -356,7 +394,6 @@ export class Product {
       throw new expressError(StatusCode.NOT_FOUND, "Product not found");
 
     deleteCache("products:*").catch(console.error);
-    deleteCache("products:subcategory*").catch(console.error);
 
     return res.status(StatusCode.OK).json({
       status: StatusCode.OK,
@@ -380,7 +417,6 @@ export class Product {
       );
 
     deleteCache("products:*").catch(console.error);
-    deleteCache("products:subcategory*").catch(console.error);
 
     return res.status(StatusCode.OK).json({
       status: result.status,

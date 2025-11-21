@@ -16,7 +16,6 @@ router.post(
   "/create-reply",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ReplyDto, "body", "create"),
   asyncHandler(reply.createReply.bind(reply))
 );
@@ -39,7 +38,6 @@ router.put(
   "/update-reply/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   validateRequest(ReplyDto, "body", "update"),
   asyncHandler(reply.updateReply.bind(reply))
 );
@@ -48,7 +46,6 @@ router.delete(
   "/delete-reply/:id",
   authentication,
   isVerifiedUser,
-  isAdmin,
   asyncHandler(reply.deleteReply.bind(reply))
 );
 

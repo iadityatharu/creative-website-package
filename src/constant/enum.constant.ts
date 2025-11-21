@@ -73,7 +73,6 @@ export enum ProductType {
 
 export enum SeoEntityType {
   PRODUCT = "PRODUCT",
-  BRAND = "BRAND",
   CATEGORY = "CATEGORY",
   BLOG = "BLOG",
 }

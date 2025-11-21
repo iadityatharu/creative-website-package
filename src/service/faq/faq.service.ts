@@ -30,7 +30,11 @@ export class Faq extends BaseService<FaqEntity> {
       query.andWhere("faq.title ILIKE :search", { search: `%${search}%` });
     }
 
-    query.orderBy("faq.createdAt", "DESC").skip(skip).take(limit);
+    query
+      .orderBy("faq.sortOrder", "ASC")
+      .addOrderBy("faq.createdAt", "DESC")
+      .skip(skip)
+      .take(limit);
 
     const [faqs, total] = await query.getManyAndCount();
 
@@ -53,7 +57,11 @@ export class Faq extends BaseService<FaqEntity> {
       where: { id, isDeleted: false },
     });
     if (!faq) return { status: StatusCode.NOT_FOUND };
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      faq.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: faq.id,
+      });
+    }
     this.repository.merge(faq, data);
     await this.repository.save(faq);
     return { status: StatusCode.OK };

@@ -7,4 +7,5 @@ export interface IReply {
   repliedById?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  sortOrder?: number;
 }

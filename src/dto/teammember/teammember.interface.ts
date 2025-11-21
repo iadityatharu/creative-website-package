@@ -10,4 +10,5 @@ export interface ITeamMember {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  sortOrder?: number;
 }

@@ -12,4 +12,5 @@ export interface IBlogPost {
   mediaUrls?: string[];
   removedMediaIds?: string[];
   author?: string;
+  sortOrder?: number;
 }

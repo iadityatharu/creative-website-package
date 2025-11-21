@@ -33,7 +33,6 @@ export class ProductDownloadController {
         "Download file is required"
       );
     }
-
     const result = await this.downloadService.createDownload(payload);
 
     if (result.status === StatusCode.BAD_REQUEST)
@@ -98,6 +97,25 @@ export class ProductDownloadController {
       status: StatusCode.OK,
       message: Message.FOUND,
       download: result.download,
+    });
+  }
+
+  async getDownloadsByProductId(
+    req: AuthenticatedRequest<{ productId: string }>,
+    res: Response
+  ) {
+    const { productId } = req.params;
+    const result = await this.downloadService.getDownloadsByProductId(
+      productId
+    );
+
+    if (result.status === StatusCode.NOT_FOUND)
+      throw new expressError(StatusCode.NOT_FOUND, "Product not found");
+
+    return res.status(StatusCode.OK).json({
+      status: StatusCode.OK,
+      message: Message.FOUND,
+      downloads: result.downloads,
     });
   }
 
@@ -207,12 +225,12 @@ export class ProductDownloadController {
 
     deleteCache("products:*").catch(console.error);
 
-   return res.status(StatusCode.OK).json({
-     status: StatusCode.OK,
-     message: Message.DELETED,
-     deletedDownloadIds: result.deletedDownloadIds,
-   });
- }
+    return res.status(StatusCode.OK).json({
+      status: StatusCode.OK,
+      message: Message.DELETED,
+      deletedDownloadIds: result.deletedDownloadIds,
+    });
+  }
 
   async destroyDownloads(
     req: AuthenticatedRequest<{ id: string }>,

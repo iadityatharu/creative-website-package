@@ -27,6 +27,7 @@ export interface IProduct {
   gallery?: any[];
   imageUrl?: string;
   removeUrls?: string[];
+  sortOrder?: number;
 }
 
 export interface IProductRecover {

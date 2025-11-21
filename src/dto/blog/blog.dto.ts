@@ -44,4 +44,8 @@ export class BlogPostDto {
   @IsArray({ groups: ["create", "update"] })
   @IsString({ each: true, groups: ["create", "update"] })
   removedMediaIds?: string[];
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

@@ -7,6 +7,7 @@ import {
   Min,
   Max,
   IsBoolean,
+  IsNumber,
 } from "class-validator";
 
 export class ReviewDto {
@@ -39,4 +40,8 @@ export class ReviewDto {
   @IsBoolean({ groups: ["create", "update"] })
   @IsOptional({ groups: ["create", "update"] })
   isPublished?: boolean;
+
+  @IsOptional({ groups: ["create", "update"] })
+  @IsNumber({}, { groups: ["create", "update"] })
+  sortOrder?: number;
 }

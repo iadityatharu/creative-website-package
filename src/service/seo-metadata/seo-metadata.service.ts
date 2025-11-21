@@ -194,7 +194,8 @@ export class SeoMetadataService extends BaseService<SeoMetadata> {
     const skip = (page - 1) * limit;
 
     const query = this.baseNotDeletedQuery()
-      .orderBy("seo.updatedAt", "DESC")
+      .orderBy("seo.sortOrder", "ASC")
+      .addOrderBy("seo.createdAt", "DESC")
       .skip(skip)
       .take(limit);
 
@@ -271,7 +272,11 @@ export class SeoMetadataService extends BaseService<SeoMetadata> {
 
     const sanitizedKeywords = this.sanitizeKeywords(data.keywords);
     const basePayload: Partial<SeoMetadata> = { ...data };
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      seoMetadata.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: seoMetadata.id,
+      });
+    }
     if (sanitizedKeywords === undefined) {
       delete (basePayload as any).keywords;
     } else {
@@ -397,7 +402,11 @@ export class SeoMetadataService extends BaseService<SeoMetadata> {
   ): Promise<{ status: number; deletedIds: string[]; deletedAssets: number }> {
     const idList = Array.isArray(ids) ? ids : [ids];
     if (!idList.length) {
-      return { status: StatusCode.BAD_REQUEST, deletedIds: [], deletedAssets: 0 };
+      return {
+        status: StatusCode.BAD_REQUEST,
+        deletedIds: [],
+        deletedAssets: 0,
+      };
     }
 
     const records = await this.repository.find({
@@ -656,6 +665,7 @@ export class SeoMetadataService extends BaseService<SeoMetadata> {
     const records = await this.baseNotDeletedQuery()
       .andWhere("seo.entityId IS NULL")
       .andWhere("seo.entityType IS NULL")
+      .orderBy("seo.sortOrder", "ASC")
       .orderBy("seo.createdAt", "DESC")
       .getMany();
 

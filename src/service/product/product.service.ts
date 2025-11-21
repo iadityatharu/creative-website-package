@@ -10,9 +10,14 @@ import { Inquiry } from "../../entities/inquiry.entity";
 import { EmailQueue } from "../../email/email.queue";
 import { newProductMailTemplate } from "../../mailtemplate/productlistedmail";
 import { SeoMetadataService } from "../seo-metadata/seo-metadata.service";
-import { SeoEntityType, ProductType } from "../../constant/enum.constant";
+import {
+  SeoEntityType,
+  ProductType,
+  MediaType,
+} from "../../constant/enum.constant";
 import { deleteMedia } from "../../functions/deleteMedia";
 import { stripDeletedRelations } from "./product.helpers";
+import { MediaAsset } from "../../entities/mediaAssets.entity";
 
 export class Product extends BaseService<ProductEntity> {
   private subCategoryRepo = AppDataSource.getRepository(SubCategory);
@@ -45,10 +50,19 @@ export class Product extends BaseService<ProductEntity> {
       if (!subcategory) return { status: StatusCode.NOT_FOUND };
     }
 
+    const sortScope: Record<string, string> | undefined = subcategory?.id
+      ? { subcategoryId: subcategory.id }
+      : undefined;
+
+    const sortOrder = await this.resolveSortOrder(data.sortOrder, {
+      scope: sortScope,
+    });
+
     const product = this.repository.create({
       ...rest,
       ...(coverImage !== undefined ? { coverImage } : {}),
       subcategory: subcategory ?? undefined,
+      sortOrder,
     });
 
     await this.repository.save(product);
@@ -71,6 +85,157 @@ export class Product extends BaseService<ProductEntity> {
     return { status: StatusCode.CREATED };
   }
 
+  private applySearchFilters(
+    query: SelectQueryBuilder<ProductEntity>,
+    search: string
+  ) {
+    const trimmed = search.trim();
+    if (!trimmed) return;
+
+    const searchParam = `%${trimmed}%`;
+    const searchConditions = [
+      "COALESCE(product.name, '') ILIKE :search",
+      "COALESCE(product.sku, '') ILIKE :search",
+      "COALESCE(product.slug, '') ILIKE :search",
+      "COALESCE(product.model, '') ILIKE :search",
+      "COALESCE(product.manualUrl, '') ILIKE :search",
+      "COALESCE(product.brochureUrl, '') ILIKE :search",
+      "COALESCE(product.shortDescription, '') ILIKE :search",
+      "COALESCE(product.description, '') ILIKE :search",
+      "COALESCE(product.technology, '') ILIKE :search",
+      "COALESCE(product.metaTitle, '') ILIKE :search",
+      "COALESCE(product.metadescription, '') ILIKE :search",
+      "COALESCE(product.metatag::text, '') ILIKE :search",
+      "COALESCE(product.feature::text, '') ILIKE :search",
+      "COALESCE(CAST(product.price AS TEXT), '') ILIKE :search",
+      "COALESCE(CAST(product.mrp AS TEXT), '') ILIKE :search",
+      "COALESCE(subcategory.title, '') ILIKE :search",
+      "COALESCE(subcategory.slug, '') ILIKE :search",
+      "COALESCE(category.title, '') ILIKE :search",
+      "COALESCE(category.slug, '') ILIKE :search",
+    ];
+
+    query.andWhere(
+      new Brackets((qb) => {
+        for (const condition of searchConditions) {
+          qb.orWhere(condition, { search: searchParam });
+        }
+      })
+    );
+  }
+
+
+  async getAllProducts(
+    page = 1,
+    limit = 10
+  ): Promise<{ status: number; data: object }> {
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const pageSize = Math.max(Number(limit) || 10, 1);
+    const skip = (currentPage - 1) * pageSize;
+
+    const [products, total] = await this.repository.findAndCount({
+      where: { isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        sortOrder: true,
+        isPopular: true,
+        coverImage: true,
+        createdAt: true,
+      },
+      order: {
+        sortOrder: "ASC",
+        createdAt: "DESC",
+      },
+      skip,
+      take: pageSize,
+    });
+
+    return {
+      status: StatusCode.OK,
+      data: {
+        products,
+        total,
+        page: currentPage,
+        limit: pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  async searchProducts(
+    page = 1,
+    limit = 10,
+    search = ""
+  ): Promise<{ status: number; data: object }> {
+    const skip = (page - 1) * limit;
+    const baseQuery = this.repository
+      .createQueryBuilder("product")
+      .select([
+        "product.id AS id",
+        "product.isPopular AS isPopular",
+        "product.coverImage AS coverImage",
+        "product.slug AS slug",
+        "product.name AS title",
+        "product.price AS price",
+        "product.sortOrder AS sortOrder",
+      ])
+      .leftJoin(
+        "product.subcategory",
+        "subcategory",
+        "subcategory.isDeleted = false"
+      )
+      .leftJoin("subcategory.category", "category")
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select("mediaAsset.fileUrl")
+            .from(MediaAsset, "mediaAsset")
+            .innerJoin("mediaAsset.gallery", "gallery")
+            .where("gallery.productId = product.id")
+            .andWhere("gallery.isDeleted = false")
+            .andWhere("mediaAsset.isDeleted = false")
+            .andWhere("mediaAsset.type = :mediaType")
+            .orderBy("gallery.isHome", "DESC")
+            .addOrderBy("mediaAsset.sortOrder", "ASC")
+            .addOrderBy("mediaAsset.createdAt", "DESC")
+            .limit(1),
+        "galleryCoverImage"
+      )
+      .where("product.isDeleted = :isDeleted", { isDeleted: false })
+      .andWhere("product.productType != :productType", {
+        productType: ProductType.SAAS,
+      })
+      .orderBy("product.name", "ASC")
+      .setParameter("mediaType", MediaType.IMAGE);
+    this.applySearchFilters(baseQuery, search);
+
+    const dataQuery = baseQuery.clone().skip(skip).take(limit);
+    const products = await dataQuery.getRawMany();
+    const total = await baseQuery.getCount();
+
+    const mappedProducts = products.map((product) => ({
+      id: product.id,
+      isPopular: product.isPopular ?? product.ispopular ?? false,
+      coverImage: product.coverImage ?? product.galleryCoverImage ?? null,
+      title: product.title,
+      slug: product.slug,
+      price: product.price ?? null,
+      sortOrder: product.sortOrder ?? product.sortorder ?? 0,
+    }));
+    return {
+      status: StatusCode.OK,
+      data: {
+        products: mappedProducts,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   async getProductsBySubCategory(
     subcategoryId: string,
@@ -105,11 +270,7 @@ export class Product extends BaseService<ProductEntity> {
         "galleryMedia",
         "galleryMedia.isDeleted = false"
       )
-      .leftJoinAndSelect(
-        "product.videos",
-        "video",
-        "video.isDeleted = false"
-      )
+      .leftJoinAndSelect("product.videos", "video", "video.isDeleted = false")
       .leftJoinAndSelect(
         "product.downloadCategories",
         "downloadCategory",
@@ -188,11 +349,7 @@ export class Product extends BaseService<ProductEntity> {
         "galleryMedia",
         "galleryMedia.isDeleted = false"
       )
-      .leftJoinAndSelect(
-        "product.videos",
-        "video",
-        "video.isDeleted = false"
-      )
+      .leftJoinAndSelect("product.videos", "video", "video.isDeleted = false")
       .leftJoinAndSelect(
         "product.downloadCategories",
         "downloadCategory",
@@ -363,6 +520,18 @@ export class Product extends BaseService<ProductEntity> {
         );
       }
     }
+
+    const sortScope: Record<string, string> | undefined = subcategory?.id
+      ? { subcategoryId: subcategory.id }
+      : undefined;
+
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      updatePayload.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: product.id,
+        scope: sortScope,
+      });
+    }
+
     this.repository.merge(product, updatePayload);
 
     if (subcategoryId !== undefined) {
@@ -389,9 +558,7 @@ export class Product extends BaseService<ProductEntity> {
       .leftJoinAndSelect("product.subcategory", "subcategory")
       .leftJoinAndSelect("subcategory.category", "category")
       .where("product.isDeleted = :isDeleted", { isDeleted: false })
-      .andWhere(
-        "(subcategory.id IS NULL OR subcategory.isDeleted = false)"
-      )
+      .andWhere("(subcategory.id IS NULL OR subcategory.isDeleted = false)")
       .andWhere("(category.id IS NULL OR category.isDeleted = false)");
 
     if (search) {
@@ -517,9 +684,11 @@ export class Product extends BaseService<ProductEntity> {
     return { status: StatusCode.OK, deletedProductIds: ids };
   }
 
-  async hardDeleteProducts(
-    ids: string[] | string
-  ): Promise<{ status: number; deletedProductIds: string[]; deletedAssets: number }> {
+  async hardDeleteProducts(ids: string[] | string): Promise<{
+    status: number;
+    deletedProductIds: string[];
+    deletedAssets: number;
+  }> {
     const idList = Array.isArray(ids) ? ids : [ids];
     if (!idList.length) {
       return {

@@ -165,7 +165,8 @@ export class ReplyService extends BaseService<Reply> {
         "user.lastname",
       ])
       .where("reply.isDeleted = false")
-      .orderBy("reply.createdAt", "DESC")
+      .orderBy("reply.sortOrder", "ASC")
+      .addOrderBy("reply.createdAt", "DESC")
       .skip(skip)
       .take(limit);
     if (search) {
@@ -213,7 +214,11 @@ export class ReplyService extends BaseService<Reply> {
   async updateReply(id: string, data: IReply): Promise<{ status: number }> {
     const reply = await this.repository.findOne({ where: { id } });
     if (!reply) return { status: StatusCode.NOT_FOUND };
-
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      reply.sortOrder = await this.resolveSortOrder(data.sortOrder, {
+        excludeId: reply.id,
+      });
+    }
     this.repository.merge(reply, data);
     await this.repository.save(reply);
     return { status: StatusCode.OK };
