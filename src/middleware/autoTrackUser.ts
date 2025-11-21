@@ -4,7 +4,6 @@ import geoip from "geoip-lite";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Logger } from "../utils/chalk";
 import { UserMetadataQueue } from "../queue/userMetadata.queue";
-
 const botUserAgents = [
   /bot/i,
   /crawl/i,
